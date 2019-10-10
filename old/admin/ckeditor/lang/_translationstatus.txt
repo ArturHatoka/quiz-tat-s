@@ -1,0 +1,6 @@
+Copyright (c) 2003-2009, CKSource - Frederico Knabben. All rights reserved.
+For licensing, see LICENSE.html or http://ckeditor.com/license
+
+en-uk.js   Found: 395 Missing: 40
+ru.js      Found: 332 Missing: 103
+uk.js      Found: 435 Missing: 0

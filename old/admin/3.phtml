@@ -1,0 +1,272 @@
+<?php
+if(isset($_GET['action']) && strlen($_GET['action'])>0 && isset($_GET['id']) && $_GET['id']>0){
+	$sort_id = mysql_result(mysql_query("SELECT sort_id FROM ".MySQLprefix."_mypages WHERE id=".$_GET['id']), 0);
+	if($_GET['action']=='up')
+		$up_ = mysql_query("SELECT sort_id, id FROM ".MySQLprefix."_mypages WHERE sort_id<".$sort_id." AND p_id=".$_GET['p_id']." AND place='top' ORDER BY sort_id DESC LIMIT 0, 1");
+	else
+		$up_ = mysql_query("SELECT sort_id, id FROM ".MySQLprefix."_mypages WHERE sort_id>".$sort_id." AND p_id=".$_GET['p_id']." AND place='top' ORDER BY sort_id ASC LIMIT 0, 1");
+	if($up_)
+		if(mysql_num_rows($up_)==1){
+			$up = mysql_fetch_assoc($up_);
+			$r = mysql_query("UPDATE ".MySQLprefix."_mypages SET sort_id=".$up['sort_id']." WHERE id=".$_GET['id']);
+			$r = mysql_query("UPDATE ".MySQLprefix."_mypages SET sort_id=".$sort_id." WHERE id=".$up['id']);
+		}
+}
+$nodelete = array(1, 2, 3, 4, 64, 56, 73, 77);
+if($_GET['del2'] == 1){
+  $upd_url = mysql_query("DELETE FROM ".MySQLprefix."_urls WHERE target_type='mypages' AND target_id='".$_GET['id']."'");
+  $result = mysql_query("DELETE FROM ".MySQLprefix."_mypages WHERE id=".$_GET['id']);
+  ?>
+  <div class="result-mess" style="position:fixed;left:50%;top:50%;margin:-50px 0 0 -200px;padding:30px;border:1px solid #fff;background:rgba(255,255,255,0.9);border-radius:20px;width:340px;height:40px;text-align:center;color:#000;font:16px/40px normal Arial;">Страница удалена</div>
+  <script type="text/javascript">
+	function rem_mes(){
+		$('.result-mess').fadeOut(1000, function(){
+			$('.result-mess').remove();
+		});
+	}
+	var mto = window.setTimeout('rem_mes()',2000);
+  </script>
+  <?php
+}
+if(strlen($_POST['nurl'])>0){
+	if($_POST['shows']!=1)
+		$_POST['shows'] = 0;
+	if($_POST['todo'] == 1){
+		$old_url = mysql_result(mysql_query("SELECT url FROM ".MySQLprefix."_mypages WHERE id=".$_POST['nid']),0);
+		$upd_url = mysql_query("UPDATE ".MySQLprefix."_mypages SET shows=".$_POST['shows'].", p_id=".$_POST[nparent].", url='".$_POST['nurl']."', text='".$_POST['editor2']."', menu='".$_POST['menu']."', keywords='".$_POST['nkeywords']."', description='".$_POST['ndescription']."', title='".$_POST['ntitle']."', h1='".$_POST['nh1']."' WHERE id=".$_POST['nid']);
+		if($old_url!=$_POST['nurl'])
+			if(mysql_result(mysql_query("SELECT count(*) FROM ".MySQLprefix."_urls WHERE url='".$old_url."'"),0)==1)
+				$upd_url = mysql_query("UPDATE ".MySQLprefix."_urls SET url='".$_POST['nurl']."' WHERE url='".$old_url."'");
+			else
+				$ins_url = mysql_query("INSERT INTO ".MySQLprefix."_urls (url, target_type, target_id) VALUES ('".$_POST['nurl']."', 'mypages', ".$_POST['nid'].")");
+		?>
+  <div class="result-mess" style="position:fixed;left:50%;top:50%;margin:-50px 0 0 -200px;padding:30px;border:1px solid #fff;background:rgba(255,255,255,0.9);border-radius:20px;width:340px;height:40px;text-align:center;color:#000;font:16px/40px normal Arial;">Информация обновлена</div>
+  <script type="text/javascript">
+	function rem_mes(){
+		$('.result-mess').fadeOut(1000, function(){
+			$('.result-mess').remove();
+		});
+	}
+	var mto = window.setTimeout('rem_mes()',2000);
+  </script>
+		<?php
+	}else{
+		$result = mysql_query("INSERT INTO ".MySQLprefix."_mypages (shows, p_id, url, place, text, h1, menu, title, description, keywords) VALUES (".$_POST['shows'].", ".$_POST[nparent].", '".$_POST['nurl']."', 'top', '".$_POST['editor2']."', '".$_POST['nh1']."', '".$_POST['menu']."', '".$_POST['ntitle']."', '".$_POST['ndescription']."', '".$_POST['nkeywords']."')");
+		$u = mysql_query("UPDATE ".MySQLprefix."_mypages SET sort_id=id WHERE sort_id=0");
+		$last_id = mysql_result(mysql_query("SELECT id FROM ".MySQLprefix."_mypages ORDER BY id DESC LIMIT 0, 1"), 0);
+		$ins_url = mysql_query("INSERT INTO ".MySQLprefix."_urls (url, target_type, target_id) VALUES ('".$_POST['nurl']."', 'mypages', ".$last_id.")");
+		?>
+  <div class="result-mess" style="position:fixed;left:50%;top:50%;margin:-50px 0 0 -200px;padding:30px;border:1px solid #fff;background:rgba(255,255,255,0.9);border-radius:20px;width:340px;height:40px;text-align:center;color:#000;font:16px/40px normal Arial;">Страница добавлена</div>
+  <script type="text/javascript">
+	function rem_mes(){
+		$('.result-mess').fadeOut(1000, function(){
+			$('.result-mess').remove();
+		});
+	}
+	var mto = window.setTimeout('rem_mes()',2000);
+  </script>
+		<?php
+	}
+}
+	$result = mysql_query("SELECT * FROM ".MySQLprefix."_mypages WHERE place='top' ORDER BY p_id ASC, sort_id ASC");
+	if ($result)
+		while ($row = mysql_fetch_assoc($result)) {
+			$treeid[] = $row["id"];
+			$treepid[] = $row["p_id"];
+			$treemenu[] = $row["menu"];
+			$treeshows[] = $row["shows"];
+			$treelevel[] = 0;
+		}
+	$count = count($treeid);
+	for ($i=0;$i<$count-1;$i++){
+		$g = $i;
+		for ($j=1;$j<$count;$j++){
+			if ($treepid[$j] == $treeid[$i]){
+				$jid = $treeid[$j];
+				$jpid = $treepid[$j];
+				$jmenu = $treemenu[$j];
+				$jshows = $treeshows[$j];
+				$jlevel = $treelevel[$i]+1;
+				$k=$j;
+				while ($k>$g+1){
+					$treeid[$k] = $treeid[$k-1];
+					$treepid[$k] = $treepid[$k-1];
+					$treemenu[$k] = $treemenu[$k-1];
+					$treeshows[$k] = $treeshows[$k-1];
+					$treelevel[$k] = $treelevel[$k-1];
+					$k=$k-1;
+				}
+				$treeid[$g+1] = $jid;
+				$treepid[$g+1] = $jpid;
+				$treemenu[$g+1] = $jmenu;
+				$treeshows[$g+1] = $jshows;
+				$treelevel[$g+1] = $jlevel;
+				$g++;
+			}
+		}
+	}
+if(!$_GET['add'] && !$_GET['edit']){
+	echo '<ul class="ul" style="margin-left:100px">';
+	for($i=0;$i<$count;$i++){
+		echo '<li><a title="вверх" style="text-decoration:none;color:blue;" class="moveit_l" href="cms.php?go='.$_GET['go'].'&p_id='.$treepid[$i].'&id='.$treeid[$i].'&action=up">&#8593;</a> <a title="вниз" style="text-decoration:none;color:blue;" class="moveit_r" href="cms.php?go='.$_GET['go'].'&p_id='.$treepid[$i].'&id='.$treeid[$i].'&action=dwn">&#8595;</a> <span'.($treeshows[$i]==0?' style="color:grey"':'').'>'.$treemenu[$i].'</span> - <a href="cms.php?go='.$_GET['go'].'&amp;edit=1&amp;id='.$treeid[$i].'#down" style="color: green;"><img alt="редактировать" src="img/edit.gif" width="16" style="vertical-align:-3px;" /></a> | ';
+		if (!$_GET['del'])
+			echo '<a '.(in_array($treeid[$i], $nodelete)?'title="Это служебная страница! Удаление не возможно. Скройте ее при необходимости" style="opacity:0.5"':'href="cms.php?go='.$_GET['go'].'&del='.$treeid[$i].'#item'.$treeid[$i].'" title="Удаление" style="color:red"').'><img alt="Удалить" src="img/del.gif" width="16" style="vertical-align:-3px;" /></a>';
+		if ($_GET['del'] == $treeid[$i])
+			echo 'Подтверждаете удаление: <a href="cms.php?go='.$_GET['go'].'&del2=1&id='.$_GET['del'].'" style="color: red;" title="Удаление">ДА</a> - <a href="cms.php?go='.$_GET['go'].'" style="color: black;" title="Отмена">НЕТ</a>';
+		if($treelevel[$i+1] > $treelevel[$i])
+			echo '<ul>';
+		if($treelevel[$i+1] == $treelevel[$i])
+			echo '</li>';
+		if($treelevel[$i+1] < $treelevel[$i]){
+			echo '</li>';
+			for($m=1;$m<=$treelevel[$i]-$treelevel[$i+1];$m++)
+				echo '</ul></li>';
+		}
+	}
+	echo '</ul>';
+}
+?>
+<a style="position:fixed;left:0;top:45%;display:block;background:#011393;color:#fff;border:1px solid #fff;border-width:1px 1px 1px 0;border-radius:0 15px 15px 0;padding:10px;cursor:pointer;" href='cms.php?go=<?php echo $_GET['go']; ?>&amp;add=1'>Добавить страницу</a>
+<?php
+if(isset($_GET['edit']) || isset($_GET['add'])){
+	if(isset($_GET['edit'])){
+		$new_r = mysql_query("SELECT * FROM ".MySQLprefix."_mypages WHERE id=".$_GET['id']);
+		if($new_r)
+			if(mysql_num_rows($new_r)==1)
+				$company = mysql_fetch_assoc($new_r);
+	}
+	?>
+	<hr/>
+	<?php if($_SESSION['u_id'] == -1 && $showCities == '0'){ ?>
+	Используйте шаблоны <input onclick="this.select()" style="background:none;border:0;text-align:center" value="%%_city_%%" /> и <input onclick="this.select()" style="background:none;border:0;text-align:center" value="%%_cityr_%%" /> для городов
+	<hr/>
+	<?php } ?>
+	<form action="" method="post" style="margin-top:40px" enctype="multipart/form-data" class="save-form">
+		<div style="width:100%;overflow:hidden">
+			<label style="display:block;width:14%;float:left;text-align:right;line-height:20px">Строка меню *:</label>
+			<div style="display:block;width:84%;float:right;text-align:left;">
+				<input type="text" name="menu" size="70" value='<?=$company['menu']?>' style="border:1px solid #011393;border-radius:3px;padding:1px 5px" /> <a class="dubl" style="color:blue;cursor:pointer;text-decoration:underline">Копировать в СЕО</a> <input type="checkbox" value="1" name="shows" <?php if($_GET['add'] == 1 || ($company['shows']==1 and $_GET['edit'] == 1)){ ?>checked="checked" <?php } ?>style="vertical-align:-2px" /> показывать на сайте
+			</div>
+		</div><br/><br/>
+		<div style="width:100%;overflow:hidden">
+			<label style="display:block;width:14%;float:left;text-align:right;line-height:20px">Вложенность:</label>
+			<div style="display:block;width:84%;float:right;text-align:left;">
+				<select name="nparent" style="border:1px solid #011393;border-radius:3px;padding:1px 5px" /> <a class="dubl" style="color:blue;cursor:pointer;text-decoration:underline">
+					<option value="0"<?php if($_GET[edit] != 1){ ?> selected="selected"<?php } ?>>не подчиненный</option>
+					<?php
+					for($i=0;$i<$count;$i++){
+						?>
+					<option value="<?=$treeid[$i]?>"<?=($company["p_id"]==$treeid[$i]&&$_GET['edit']==1?' selected="selected"':'')?><?=($treeid[$i]==$_GET['id']?' disabled="disabled"':'')?>><?php  for($m=0;$m<$treelevel[$i];$m++){ ?> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php } echo $treemenu[$i]; ?></option>
+						<?php
+					}
+					?>
+				</select>
+			</div>
+		</div><br/><br/>
+		<div style="width:100%;overflow:hidden<?=(in_array($_GET['id'], $nodelete)?';display:none':'')?>">
+			<label style="display:block;width:14%;float:left;text-align:right;line-height:20px">URL страницы *:</label>
+			<div style="display:block;width:84%;float:right;text-align:left;">
+				<input type="text" name="nurl" size="70" value='<?=$company['url']?>' style="border:1px solid #011393;border-radius:3px;padding:1px 5px" /> <a class="transform-title" style="color:blue;text-decoration:underline;cursor:pointer;">Сформировать из Title</a> | <a class="check-url" style="color:blue;text-decoration:underline;cursor:pointer;">Проверить уникальность</a><br/><i class="check-url-result" style="color:black;text-decoration:none;"></i>
+			</div>
+		</div><br/><hr/><br/>
+		<div style="width:100%;overflow:hidden">
+			<label style="display:block;width:14%;float:left;text-align:right;line-height:20px">SEO title:</label>
+			<div style="display:block;width:84%;float:right;text-align:left;">
+				<textarea name="ntitle" cols="90" rows="2" style="border:1px solid #011393;border-radius:3px;padding:1px 5px"><?=$company['title']?></textarea>
+			</div>
+		</div><br/><br/>
+		<div style="width:100%;overflow:hidden">
+			<label style="display:block;width:14%;float:left;text-align:right;line-height:20px">SEO description:</label>
+			<div style="display:block;width:84%;float:right;text-align:left;">
+				<textarea name="ndescription" cols="90" rows="2" style="border:1px solid #011393;border-radius:3px;padding:1px 5px"><?=$company['description']?></textarea>
+			</div>
+		</div><br/><br/>
+		<div style="width:100%;overflow:hidden">
+			<label style="display:block;width:14%;float:left;text-align:right;line-height:20px">SEO keywords:</label>
+			<div style="display:block;width:84%;float:right;text-align:left;">
+				<textarea name="nkeywords" cols="90" rows="2" style="border:1px solid #011393;border-radius:3px;padding:1px 5px"><?=$company['keywords']?></textarea>
+			</div>
+		</div><br/><hr/><br/>
+		<div style="width:100%;overflow:hidden">
+			<label style="display:block;width:14%;float:left;text-align:right;line-height:20px">H1:</label>
+			<div style="display:block;width:84%;float:right;text-align:left;">
+				<input type="text" name="nh1" size="120" value='<?=$company['h1']?>' style="border:1px solid #011393;border-radius:3px;padding:1px 5px" />
+			</div>
+		</div><br/><br/>
+		<div style="width:100%;overflow:hidden">
+			<label style="display:block;width:14%;float:left;text-align:right;line-height:20px">Текст:<br/><br/><br/>Используйте шаблон <input onclick="this.select()" style="background:none;border:0;text-align:center" value="%%__FORMA__%%" /> для вставки формы</label>
+			<div style="display:block;width:84%;float:right;text-align:left;">
+				<textarea id="editor2" cols="80" rows="5" name="editor2"><?=$company['text']?></textarea>
+				<script type="text/javascript">
+					<!--
+					var ckeditor2 = CKEDITOR.replace("editor2");
+					AjexFileManager.init({returnTo: "ckeditor", editor: ckeditor2, skin: "light"});
+					//-->
+				</script>
+			</div>
+		</div>
+		<script type="text/javascript">
+			function translite(string){
+				var dictionary = {
+					"а":"a",	"А":"a",	"б":"b",	"Б":"b",	"в":"v",	"В":"v",	"г":"g",	"Г":"g",	"д":"d",
+					"Д":"d",	"е":"e",	"Е":"e",	"ё":"yo",	"Ё":"yo",	"ж":"gh",	"Ж":"gh",	"з":"z",	"З":"z",
+					"и":"i",	"И":"i",	"й":"j",	"Й":"j",	"к":"k",	"К":"k",	"л":"l",	"Л":"l",	"м":"m",
+					"М":"m",	"н":"n",	"Н":"n",	"о":"o",	"О":"o",	"п":"p",	"П":"p",	"р":"r",	"Р":"r",
+					"с":"s",	"С":"s",	"т":"t",	"Т":"t",	"у":"u",	"У":"u",	"ф":"f",	"Ф":"f",	"х":"h",
+					"Х":"h",	"ц":"c",	"Ц":"c",	"ч":"ch",	"Ч":"ch",	"ш":"sh",	"Ш":"sh",	"щ":"sh",	"Щ":"sh",
+					"ы":"i",	"Ы":"i",	"э":"e",	"Э":"e",	"ю":"u",	"Ю":"yu",	"я":"ya",	"Я":"ya",	"ь":"",
+					"Ь":"",		"ъ":"",		"Ъ":"",		'"':'',		"'":'',		'!':'',		"?":'',		' ':'-',	":":'',
+					",":'',		".":'',		";":'',		"&":'',		"«":'',		"»":'',		"²":'2'};
+				return string.replace(/[\s\S]/g, function(x){
+					if( dictionary.hasOwnProperty( x ) )
+						return dictionary[ x ];
+					return x;
+				});
+			}
+			$(document).ready(function(){
+				$(".dubl").click(function(){
+					$("textarea[name='ntitle']").val($("input[name='menu']").val());
+					$("textarea[name='ndescription']").val($("input[name='menu']").val());
+					$("textarea[name='nkeywords']").val($("input[name='menu']").val());
+					$("input[name='nh1']").val($("input[name='menu']").val());
+				});
+				$('.check-url').click(function(){
+					if($('input[name="nurl"]').val().length>0)
+						$.post('_check_url.php', {newurl: $('input[name="nurl"]').val()<?=($_GET['edit']==1 && $_GET['id']>0 ? ', edit: '.$_GET['id'] : '')?>}, function(data){
+							if(data=='0'){
+								$('input[name="nurl"]').css({'color':'#090'});
+								$('.check-url-result').html('адрес свободен');
+								$('input[name="update"]').show();
+							}else{
+								$('input[name="nurl"]').css({'color':'#900'});
+								$('.check-url-result').html('адрес занят !!!');
+								$('input[name="update"]').hide();
+							}
+						});
+				});
+				$('.save-form').submit(function(){
+					if($('input[name="nurl"]').val().length>0)
+						$.post('_check_url.php', {newurl: $('input[name="nurl"]').val()<?=($_GET['edit']==1 && $_GET['id']>0 ? ', edit: '.$_GET['id'] : '')?>}, function(data){
+							if(data != '0')
+								return false;
+						});
+					else
+						return false;
+				});
+				$('input[name="nurl"]').change(function(){
+					$('.check-url').click();
+				});
+				$('input[name="nurl"]').keyup(function(){
+					$('.check-url').click();
+				});
+				$('.transform-title').click(function(){
+					$('input[name="nurl"]').val(translite($('textarea[name="ntitle"]').val()));
+					$('.check-url').click();
+				});
+			});
+		</script>
+		<input type="hidden" name="todo" value="<?php echo $_GET['edit']; ?>" />
+		<input type="hidden" name="nid" value="<?php if($_GET['edit'] == 1){echo $_GET['id'];} ?>" />
+		<input type="submit" name="update" value="Сохранить" style="position:fixed;left:0;top:50%;display:<?=($_GET['edit']==1 && $_GET['id']>0 && strlen($company['url'])>0?'block':'none')?>;background:#011393;color:#fff;border:1px solid #fff;border-width:1px 1px 1px 0;border-radius:0 15px 15px 0;padding:10px;cursor:pointer;" />
+	</form>
+<?php } ?>

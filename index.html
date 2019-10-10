@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz Tat-sait</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,800&display=swap&subset=cyrillic" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="src/css/style.css">
+    <link rel="icon" href="src/img/favicon.png" sizes="16x16">
+</head>
+<body>
+<header class="header container-fluid position-absolute z-2 pt-3">
+    <nav class="container d-flex justify-content-between align-items-center">
+        <img src="src/img/logo.png" alt="">
+        <span class="h5 text-white text-center px-5">Где мы находимся: <br>
+            г. Казань, проспект Ямашева, дом 51б
+            <hr class="border-white w-100 mb-0 mt-2">
+        </span>
+        <a class="h4 text-white" href="telto:+78432587034">+7 (843) 258-70-34</a>
+    </nav>
+</header>
+<main class="main bg-light z-1">
+    <section class="container-fluid bg-main position-relative">
+        <div class="container d-flex flex-column align-items-center h-100 justify-content-around">
+            <h1 class="text-uppercase text-white h1 font-weight-bold text-center">Нужен рабочий сайт и нет времени разбираться с вариантами?</h1>
+            <span class="h4 text-white text-center">Пройди тест и получи подробную консультацию от нашего маркетолога!</span>
+            <button class="btn btn-fill font-weight-bold text-uppercase px-4">Начать</button>
+            <div class="d-flex w-100 justify-content-between mb-4">
+                <div class="col-4 d-flex flex-column align-items-center px-5">
+                    <img class="mb-1" src="src/img/file1.png" alt="">
+                    <span class="text-white text-center">
+                        Пройдите тест прямо сейчас и узнайте стоимость вашего сайта
+                    </span>
+                </div>
+                <div class="col-4 d-flex flex-column align-items-center mt-5 px-5">
+                    <img class="mb-1" src="src/img/file2.png" alt="">
+                    <span class="text-white text-center">
+                        Заполнение этого теста займет у вас не больше 5 минута
+                    </span>
+                </div>
+                <div class="col-4 d-flex flex-column align-items-center px-5">
+                    <img class="mb-1" src="src/img/file3.png" alt="">
+                    <span class="text-white text-center">
+                        После прохождения теста вы получите персональную скидку
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div style="bottom: 0; left: 0; width: 100%; overflow: hidden" class="position-absolute">
+            <div class="" style="height: 40px">
+                <svg style="display: block; width: 100%; height: 100%; position: absolute;" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <path d="M 0 100 H 100 V 0 H 100.00 L 50 100 L 0.00 0 H 0 Z" style="fill: #fff;"></path>
+                </svg>
+            </div>
+        </div>
+    </section>
+    <section class="container-fluid">
+
+    </section>
+    <section class="container-fluid py-3">
+        <h3 class="text-center h3 font-weight-bold pb-3">Отзывы наших клиентов</h3>
+        <div class="container review">
+            <a class="review-box" href="src/img/review1.jpg" data-fancybox="gallery">
+                <img class="review-item" src="src/img/review1.jpg " alt="review1">
+            </a>
+            <a class="review-box" href="src/img/review1.jpg" data-fancybox="gallery">
+                <img class="review-item" src="src/img/review1.jpg " alt="review1">
+            </a>
+            <a class="review-box" href="src/img/review1.jpg" data-fancybox="gallery">
+                <img class="review-item" src="src/img/review1.jpg " alt="review1">
+            </a>
+            <a class="review-box" href="src/img/review1.jpg" data-fancybox="gallery">
+                <img class="review-item" src="src/img/review1.jpg " alt="review1">
+            </a>
+            <a class="review-box" href="src/img/review1.jpg" data-fancybox="gallery">
+                <img class="review-item" src="src/img/review1.jpg " alt="review1">
+            </a>
+            <a class="review-box" href="src/img/review1.jpg" data-fancybox="gallery">
+                <img class="review-item" src="src/img/review1.jpg " alt="review1">
+            </a>
+            <a class="review-box" href="src/img/review1.jpg" data-fancybox="gallery">
+                <img class="review-item" src="src/img/review1.jpg " alt="review1">
+            </a>
+            <a class="review-box" href="src/img/review1.jpg" data-fancybox="gallery">
+                <img class="review-item" src="src/img/review1.jpg " alt="review1">
+            </a>
+            <a class="review-box" href="src/img/review1.jpg" data-fancybox="gallery">
+                <img class="review-item" src="src/img/review1.jpg " alt="review1">
+            </a>
+            <a class="review-box" href="src/img/review1.jpg" data-fancybox="gallery">
+                <img class="review-item" src="src/img/review1.jpg " alt="review1">
+            </a>
+        </div>
+    </section>
+</main>
+<footer class="footer bg-dark py-5">
+
+</footer>
+</body>
+<script src="src/jq/jquery-3.4.1.min.js"></script>
+<script src="src/app/bootstrap/popper.min.js"></script>
+<script src="src/app/bootstrap/bootstrap.min.js"></script>
+<script src="src/app/fancybox/jquery.fancybox.min.js"></script>
+<script src="src/jq/scripts.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const header = document.querySelector('.header');
+        const headerHeight = header.clientHeight;
+        const mainScreen = document.querySelector('.bg-main');
+
+        const sizeMainScreen = () => {
+            let wh = document.documentElement.clientHeight;
+            let wh75 = wh / 100 * 75;
+            mainScreen.style.cssText = `
+                height: ${wh75}px;
+                padding-top: ${headerHeight+20}px;
+            `;
+        };
+        window.addEventListener('resize', sizeMainScreen);
+        sizeMainScreen()
+    });
+</script>
+</html>

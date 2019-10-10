@@ -1,0 +1,130 @@
+<?php
+if(isset($_GET['action']) && strlen($_GET['action'])>0 && isset($_GET['id']) && $_GET['id']>0){
+	$sort_id = mysql_result(mysql_query("SELECT sort_id FROM ".MySQLprefix."_questions WHERE id=".$_GET['id']), 0);
+	if($_GET['action']=='up')
+		$up_ = mysql_query("SELECT sort_id, id FROM ".MySQLprefix."_questions WHERE sort_id<".$sort_id." AND p_id=".$_GET['p_id']." ORDER BY sort_id DESC LIMIT 0, 1");
+	else
+		$up_ = mysql_query("SELECT sort_id, id FROM ".MySQLprefix."_questions WHERE sort_id>".$sort_id." AND p_id=".$_GET['p_id']." ORDER BY sort_id ASC LIMIT 0, 1");
+	if($up_)
+		if(mysql_num_rows($up_)==1){
+			$up = mysql_fetch_assoc($up_);
+			$r = mysql_query("UPDATE ".MySQLprefix."_questions SET sort_id=".$up['sort_id']." WHERE id=".$_GET['id']);
+			$r = mysql_query("UPDATE ".MySQLprefix."_questions SET sort_id=".$sort_id." WHERE id=".$up['id']);
+		}
+}
+if($_GET['del2'] == 1)
+	$result = mysql_query("DELETE FROM ".MySQLprefix."_questions WHERE id=".$_GET['id']);
+if(strlen($_POST['nname'])>0){
+	if($_POST['checked']!=1)
+		$_POST['checked'] = 0;
+	if($_POST['todo'] == 1){
+		$result = mysql_query("UPDATE ".MySQLprefix."_questions SET checked=".$_POST['checked'].", p_id='".$_POST['nparent']."', name='".$_POST['nname']."', qtype='".$_POST['qtype']."' WHERE id=".$_POST['nid']);
+	}else{
+		$result = mysql_query("INSERT INTO ".MySQLprefix."_questions (p_id, name, checked, qtype) VALUES ('".$_POST['nparent']."', '".$_POST['nname']."', '".$_POST['checked']."', '".$_POST['qtype']."')");
+		$result = mysql_query("UPDATE ".MySQLprefix."_questions SET sort_id=id WHERE sort_id=0");
+	}
+}
+$result = mysql_query("SELECT * FROM ".MySQLprefix."_questions ORDER BY p_id ASC, sort_id ASC");
+if ($result)
+	while ($row = mysql_fetch_assoc($result)) {
+		$treeid[] = $row["id"];
+		$treesid[] = $row["sort_id"];
+		$treename[] = $row["name"];
+		$treepid[] = $row["p_id"];
+		$treelevel[] = 0;
+	}
+$count = count($treeid);
+for ($i=0;$i<$count-1;$i++){
+	$g = $i;
+	for ($j=1;$j<$count;$j++){
+		if ($treepid[$j] == $treeid[$i]){
+			$jid = $treeid[$j];
+			$jsid = $treesid[$j];
+			$jpid = $treepid[$j];
+			$jname = $treename[$j];
+			$jlevel = $treelevel[$i]+1;
+			$k=$j;
+			while ($k>$g+1){
+				$treeid[$k] = $treeid[$k-1];
+				$treesid[$k] = $treesid[$k-1];
+				$treepid[$k] = $treepid[$k-1];
+				$treename[$k] = $treename[$k-1];
+				$treelevel[$k] = $treelevel[$k-1];
+				$k=$k-1;
+			}
+			$treeid[$g+1] = $jid;
+			$treesid[$g+1] = $jsid;
+			$treepid[$g+1] = $jpid;
+			$treename[$g+1] = $jname;
+			$treelevel[$g+1] = $jlevel;
+			$g++;
+		}
+	}
+}
+if ($_GET['add'] == 1 or $_GET['edit'] == 1){
+	?>
+<form action="cms.php?go=<?=$_GET['go']?>" method="post" name="page_form" enctype="multipart/form-data" class="save-form">
+	<?php
+	if ($_GET['edit'] == 1)
+		$row31 = mysql_fetch_assoc(mysql_query("SELECT * FROM ".MySQLprefix."_questions WHERE id='".$_GET['id']."'"));
+	?>
+	<div style="width:100%;overflow:hidden">
+		<label style="display:block;width:14%;float:left;text-align:right;line-height:20px">Название:</label>
+		<div style="display:block;width:84%;float:right;text-align:left;">
+			<input type="text" name="nname" size="70" value='<?=$row31['name']?>' style="border:1px solid #011393;border-radius:3px;padding:1px 5px" /> <input type="checkbox" value="1" name="checked" <?php if($row31['checked']==1 && $_GET['edit'] == 1){ ?>checked="checked" <?php } ?>style="vertical-align:-2px" />ответ отмечен 
+		</div>
+	</div><br/><br/>
+	<div style="width:100%;overflow:hidden">
+		<label style="display:block;width:14%;float:left;text-align:right;line-height:20px">Вложенность:</label>
+		<div style="display:block;width:84%;float:right;text-align:left">
+			<select name="nparent" style="border:1px solid #011393;border-radius:3px;padding:1px 5px">
+				<option value="0"<?=($_GET['add'] == 1 || ($row31["p_id"] == 0 && $_GET['edit'] == 1) ? ' selected' : '')?>>не выбран</option>
+				<?php
+				for($i=0;$i<count($treeid);$i++){
+					?>
+				<option value="<?=$treeid[$i]?>"<?=($row31["p_id"] == $treeid[$i] && $_GET['edit'] == 1 ? ' selected' : '')?>><?php for($m=0;$m<$treelevel[$i];$m++){ ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php } echo $treename[$i]; ?></option>
+					<?php
+				}
+				?>
+			</select>
+		</div>
+	</div><br/><br/>
+	<div style="width:100%;overflow:hidden">
+		<label style="display:block;width:14%;float:left;text-align:right;line-height:20px">Выбор вариантов ответа:</label>
+		<div style="display:block;width:84%;float:right;text-align:left">
+			<select name="qtype" style="border:1px solid #011393;border-radius:3px;padding:1px 5px">
+				<option value="7"<?=($_GET['add'] == 1 || ($row31["qtype"] == 7 && $_GET['edit'] == 1) ? ' selected' : '')?>>Только ОДИН</option>
+				<option value="6"<?=(($row31["qtype"] == 6 && $_GET['edit'] == 1) ? ' selected' : '')?>>НЕСКОЛЬКО сразу</option>
+			</select> (только для ВОПРОСА)
+		</div>
+	</div><br/><br/>
+	<input type="hidden" name="todo" value="<?=$_GET['edit']?>" />
+	<input type="hidden" name="nid" value="<?=($_GET['edit'] == 1 ? $_GET['id'] : '')?>" />
+	<input type="submit" name="update" value="Сохранить" style="position:fixed;left:0;top:60%;display:block;background:#011393;color:#fff;border:1px solid #fff;border-width:1px 1px 1px 0;border-radius:0 15px 15px 0;padding:10px;cursor:pointer" />
+</form>
+<hr/>
+	<?php
+}else{
+	?>
+<a style="position:fixed;left:0;top:60%;display:block;background:#011393;color:#fff;border:1px solid #fff;border-width:1px 1px 1px 0;border-radius:0 15px 15px 0;padding:10px;cursor:pointer;" href='cms.php?go=<?=$_GET['go']?>&amp;add=1'>Добавить</a>
+	<?php
+}
+echo '<ul style="width:90%;">';
+for($i=0;$i<count($treeid);$i++){
+	echo '<li><a title="вверх" style="text-decoration:none;color:blue;" class="moveit_l" href="cms.php?go='.$_GET['go'].'&p_id='.$treepid[$i].'&id='.$treeid[$i].'&action=up">&#8593;</a> <a title="вниз" style="text-decoration:none;color:blue;" class="moveit_r" href="cms.php?go='.$_GET['go'].'&p_id='.$treepid[$i].'&id='.$treeid[$i].'&action=dwn">&#8595;</a> '.$treename[$i].' - <a href="cms.php?go='.$_GET['go'].'&amp;edit=1&amp;id='.$treeid[$i].'" style="color: green;"><img alt="редактировать" src="img/edit.gif" width="16" style="vertical-align:-3px;" /></a>';
+	if (!$_GET['del'] && !($treelevel[$i+1]>$treelevel[$i]))
+		echo ' | <a href="cms.php?go='.$_GET['go'].'&del='.$treeid[$i].'#item'.$treeid[$i].'" style="color: red;" title="Удаление"><img alt="Удалить" src="img/del.gif" width="16" style="vertical-align:-3px;" /></a>';
+	if ($_GET['del'] == $treeid[$i])
+		echo ' | Удалить? <a href="cms.php?go='.$_GET['go'].'&del2=1&id='.$_GET['del'].'" style="color: red;" title="Удаление">ДА</a> - <a href="cms.php?go='.$_GET['go'].'" style="color: black;" title="Отмена">НЕТ</a>';
+	if($treelevel[$i+1] > $treelevel[$i])
+		echo '<ul>';
+	if($treelevel[$i+1] == $treelevel[$i])
+		echo '</li>';
+	if($treelevel[$i+1] < $treelevel[$i]){
+		echo '</li>';
+		for($m=1;$m<=$treelevel[$i]-$treelevel[$i+1];$m++)
+			echo '</ul></li>';
+	}
+}
+echo '</ul>';
+?>

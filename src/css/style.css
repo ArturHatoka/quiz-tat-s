@@ -1,0 +1,46 @@
+@import url(../app/bootstrap/bootstrap_cust.min.css);
+@import url(../app/fancybox/jquery.fancybox.min.css);
+html, body {
+  font-family: 'Open Sans', sans-serif; }
+
+.bg-main {
+  background: url("../../src/img/bg-main.jpg") #333333 center center no-repeat;
+  background-size: cover;
+  background-blend-mode: multiply; }
+
+.btn-fill {
+  border: 2px solid #FFEE03;
+  background: #FFEE03;
+  transition: background-color .3s, color .3s;
+  font-size: 20px; }
+  .btn-fill:hover {
+    background: rgba(255, 238, 3, 0.51);
+    color: white;
+    transition: background-color .3s, color .3s; }
+
+.review {
+  position: relative;
+  display: flex;
+  justify-content: space-around;
+  align-content: center;
+  flex-wrap: wrap; }
+  .review-box {
+    position: relative;
+    width: 20%;
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+    padding: 0 10px; }
+    .review-box:before {
+      content: '';
+      height: 100%;
+      display: block;
+      width: 11px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      background: url(../img/lpap.png) no-repeat 100% 0; }
+  .review-item {
+    width: 100%;
+    height: auto;
+    box-shadow: 1px 1px 5px #00000050; }

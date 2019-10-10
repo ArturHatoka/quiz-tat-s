@@ -1,0 +1,51 @@
+$main-color:#FFEE03;
+$main-color-op5: rgba(255, 238, 3, 0.51);
+html, body{
+  font-family: 'Open Sans', sans-serif;
+}
+.bg-main{
+  background: url("../../src/img/bg-main.jpg") rgb(51, 51, 51) center center no-repeat;
+  background-size: cover;
+  background-blend-mode: multiply;
+}
+.btn-fill{
+  border: 2px solid $main-color;
+  background: $main-color;
+  transition: background-color .3s, color .3s;
+  font-size: 20px;
+  &:hover{
+    background: $main-color-op5;
+    color: white;
+    transition: background-color .3s, color .3s;
+  }
+}
+.review{
+  position: relative;
+  display: flex;
+  justify-content: space-around;
+  align-content: center;
+  flex-wrap: wrap;
+  &-box{
+    position: relative;
+    width: 20%;
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+    padding: 0 10px;
+    &:before {
+      content: '';
+      height: 100%;
+      display: block;
+      width: 11px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      background: url(../img/lpap.png) no-repeat 100% 0;
+    }
+  }
+  &-item{
+    width: 100%;
+    height: auto;
+    box-shadow: 1px 1px 5px #00000050;
+  }
+}
